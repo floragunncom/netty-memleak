@@ -36,54 +36,40 @@ public class SecureChatServerHandler extends SimpleChannelInboundHandler<String>
 
     @Override
     public void channelActive(final ChannelHandlerContext ctx) {
-        // Once session is secured, send a greeting and register the channel to the global channel
-        // list so the channel received the messages from others.
-        
-        if(ctx.pipeline().get(SslHandler.class) == null) {
+
+        if (ctx.pipeline().get(SslHandler.class) == null) {
             System.out.println("*** NO SSL ***");
             return;
         }
-        
-        ctx.pipeline().get(SslHandler.class).handshakeFuture().addListener(
-                new GenericFutureListener<Future<Channel>>() {
-                    @Override
-                    public void operationComplete(Future<Channel> future) throws Exception {
-                        System.out.println(
-                                "Welcome to " + InetAddress.getLocalHost().getHostName() + " secure chat service!");
-                        System.out.println(
-                                "Your session is protected by " +
-                                        ctx.pipeline().get(SslHandler.class).engine().getSession().getCipherSuite() +
-                                        " cipher suite.");
 
-                        System.out.println("Peer certificates length: "+ctx.pipeline().get(SslHandler.class).engine().getSession().getPeerCertificates().length);
-                        channels.add(ctx.channel());
-                    }
+        ctx.pipeline().get(SslHandler.class).handshakeFuture().addListener(new GenericFutureListener<Future<Channel>>() {
+            @Override
+            public void operationComplete(Future<Channel> future) throws Exception {
+                System.out.println("Welcome to " + InetAddress.getLocalHost().getHostName() + " secure chat service!");
+                System.out.println("Your session is protected by "
+                        + ctx.pipeline().get(SslHandler.class).engine().getSession().getCipherSuite() + " cipher suite.");
+
+                System.out.println("Peer certificates length: "
+                        + ctx.pipeline().get(SslHandler.class).engine().getSession().getPeerCertificates().length);
+                channels.add(ctx.channel());
+            }
         });
     }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-        // Send the received message to all channels but the current one.
-        
-        for (Channel c: channels) {
+        for (Channel c : channels) {
             if (c != ctx.channel()) {
                 c.writeAndFlush("ack\r\n");
             } else {
                 c.writeAndFlush("ack\r\n");
             }
         }
-        
-        //System.out.println("received: "+msg.getBytes().length);
-
-        // Close the connection if the client has sent 'bye'.
-       // if ("bye".equals(msg.toLowerCase())) {
-        //   ctx.close();
-        //}
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        if(!cause.getMessage().contains("Connection reset by peer")) {
+        if (!cause.getMessage().contains("Connection reset by peer")) {
             cause.printStackTrace();
         }
         ctx.close();

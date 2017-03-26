@@ -16,8 +16,6 @@
 package io.netty.example.securechat;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.UnpooledByteBufAllocator;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -33,18 +31,15 @@ public final class SecureChatServer {
 
     private static EventLoopGroup bossGroup;
     private static EventLoopGroup workerGroup;
-    
+
     public static void main(String[] args) throws Exception {
-        System.out.println("Start netty server v4 on "+PORT+" with "+Main.PROVIDER+" provider");
+        System.out.println("Start netty server v4 on " + PORT + " with " + Main.PROVIDER + " provider");
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
         try {
             ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup)
-             .channel(NioServerSocketChannel.class)
-             .handler(new LoggingHandler(LogLevel.INFO))
-             //.option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
-             .childHandler(new SecureChatServerInitializer(Main.SERVER_SSL_CTX));
+            b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).handler(new LoggingHandler(LogLevel.INFO))
+                    .childHandler(new SecureChatServerInitializer(Main.SERVER_SSL_CTX));
 
             b.bind(PORT).sync().channel().closeFuture().sync();
         } finally {
@@ -52,7 +47,7 @@ public final class SecureChatServer {
             workerGroup.shutdownGracefully();
         }
     }
-    
+
     public static void kill() {
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();

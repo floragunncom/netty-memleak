@@ -18,14 +18,11 @@ package io.netty.example.securechat;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-/**
- * Handles a client-side channel.
- */
 public class SecureChatClientHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-        //System.out.println("client got "+msg);
+        // System.out.println("client got "+msg);
     }
 
     @Override
