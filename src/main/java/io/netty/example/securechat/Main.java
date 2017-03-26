@@ -8,9 +8,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -21,8 +19,8 @@ import javax.net.ssl.SSLException;
 
 public class Main {
     
-    //public final static SslProvider PROVIDER = SslProvider.JDK;
-    public final static SslProvider PROVIDER = Boolean.getBoolean("memleak.disable_ossl")?SslProvider.JDK:SslProvider.OPENSSL;
+   //public final static SslProvider PROVIDER = SslProvider.OPENSSL;
+    public final static SslProvider PROVIDER = SslProvider.JDK;
     
     public static SslContext SERVER_SSL_CTX = null;
     
@@ -64,51 +62,27 @@ public class Main {
         System.out.println("Open SSL version: "+OpenSsl.versionString());
         System.out.println("Max memory: "+Runtime.getRuntime().maxMemory()/(1024*1024)+"mb");
         System.out.println("Starttime: "+new Date());
+        long start = System.currentTimeMillis();
         
-        /*new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                while(true) {
-                    System.out.println("-------- Memory usage "+PROVIDER+" -------------------");
-                    System.out.println("Free: "+Runtime.getRuntime().freeMemory()/(1024*1024)+"mb");
-                    System.out.println("Total: "+Runtime.getRuntime().totalMemory()/(1024*1024)+"mb");
-                    System.out.println(executeCommand(new String []{"/bin/sh", "-c", "ps -ef | grep -i java"}));
-                    try {
-                        Thread.sleep(10000);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-        }).start();*/
-        
-        
-        new Thread(new Runnable() {
+        Thread s = new Thread(new Runnable() {
 
             @Override
             public void run() {
                 try {
-                    if(Boolean.getBoolean("memleak.v4only")) {
-                        SecureChatServer.main(null);
-                    } else {
-                        SecureChatServer3.main(null);
-                    }
-                    
+                  SecureChatServer.main(null);           
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
             }
-        }).start();
+        });
+        s.start();
         
         Thread.sleep(2000);
 
-        for(;;) {
+       // for(;;) {
 
-            new Thread(new Runnable() {
+            Thread c = new Thread(new Runnable() {
     
                 @Override
                 public void run() {
@@ -119,10 +93,18 @@ public class Main {
                         e.printStackTrace();
                     }
                 }
-            }).start();
+            });
             
-            Thread.sleep(2000);
-        }
+            c.start();
+            c.join();
+            System.out.println("ce");
+            SecureChatServer.kill();
+            s.interrupt();
+            System.out.println("Endtime: "+new Date());
+            long end = System.currentTimeMillis();
+            System.out.println("Took "+(end-start)+" ms");
+        //    Thread.sleep(2000);
+      //  }
 
     }
 
@@ -146,30 +128,6 @@ public class Main {
             System.out.println("Failed to load " + fileNameFromClasspath);
         }
         return null;
-    }
-    
-    private static String executeCommand(String[] command) {
-
-        StringBuffer output = new StringBuffer();
-
-        Process p;
-        try {
-            p = Runtime.getRuntime().exec(command);
-            p.waitFor();
-            BufferedReader reader = 
-                            new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-                        String line = "";           
-            while ((line = reader.readLine())!= null) {
-                output.append(line + "\n");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return output.toString();
-
     }
 
 }

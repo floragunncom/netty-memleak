@@ -16,8 +16,10 @@
 package io.netty.example.securechat;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -31,12 +33,22 @@ public final class SecureChatClient {
 
     static final String HOST = System.getProperty("host", "127.0.0.1");
     static final int PORT = Integer.parseInt(System.getProperty("port", "8992"));
+    public static final String LARGE_DATA;
     
     private static SslContext sslCtx = null;
     static {
-
+        
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<80000;i++) {
+            sb.append("AAAAAABBBBBBBBBCCCCCCCCCCCCCCDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEEEEFFFFFFFFFFFFFFFFFFFF");
+            sb.append("AAAAAABBBBBBBBBCCCCCCCCCCCCCCDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEEEEFFFFFFFFFFFFFFFFFFFF");
+            sb.append("AAAAAABBBBBBBBBCCCCCCCCCCCCCCDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEEEEFFFFFFFFFFFFFFFFFFFF");
+        }
+        LARGE_DATA = sb.toString();
+        System.out.println("Data size "+(LARGE_DATA.getBytes().length/(1024*1024))+" mb");
+        
         try {
-        File[]   pemks = SSLCertificateHelper.jksKsToPem("node-0-keystore.jks");
+        File[] pemks = SSLCertificateHelper.jksKsToPem("node-0-keystore.jks");
         File pemts = SSLCertificateHelper.jksTsToPem("truststore.jks");
 
         
@@ -64,6 +76,7 @@ public final class SecureChatClient {
             Bootstrap b = new Bootstrap();
             b.group(group)
              .channel(NioSocketChannel.class)
+             //.option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
              .handler(new SecureChatClientInitializer(sslCtx));
 
             // Start the connection attempt.
@@ -72,13 +85,16 @@ public final class SecureChatClient {
             // Read commands from the stdin.
             ChannelFuture lastWriteFuture = null;
             //BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-            for (int i=0;i<5;i++) {
-                String line = Thread.currentThread().getId()+"msg"+System.currentTimeMillis();//in.readLine();
+            int rounds = 1;
+            System.out.println("rounds "+rounds);
+            for (int i=0;i<rounds;i++) {
+                String line = LARGE_DATA;
                 
-                Thread.sleep(10);
+                //Thread.sleep(10);
 
                 // Sends the received line to the server.
-                lastWriteFuture = ch.writeAndFlush(line + "\r\n");
+                lastWriteFuture = ch.writeAndFlush(line);
+                //System.out.println("sent "+line.getBytes().length);
 
                 // If user typed the 'bye' command, wait until the server closes
                 // the connection.
@@ -87,11 +103,16 @@ public final class SecureChatClient {
                     break;
                 }
             }
+            
+           
 
             // Wait until all messages are flushed before closing the channel.
             if (lastWriteFuture != null) {
                 lastWriteFuture.sync();
             }
+            
+         
+            
         } finally {
             // The connection is closed automatically on shutdown.
             group.shutdownGracefully();

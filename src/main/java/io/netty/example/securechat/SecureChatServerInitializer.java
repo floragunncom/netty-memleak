@@ -21,6 +21,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
+import io.netty.handler.codec.FixedLengthFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
@@ -49,16 +50,14 @@ public class SecureChatServerInitializer extends ChannelInitializer<SocketChanne
         // You will need something more complicated to identify both
         // and server in the real world.
         
-        SSLEngine engine = sslCtx.newEngine(PooledByteBufAllocator.DEFAULT);
+        SSLEngine engine = sslCtx.newEngine(ch.alloc());
         //engine.setUseClientMode(false);
         engine.setNeedClientAuth(true);
         
-        pipeline.addLast(new SslHandler(engine));
-        
-        //pipeline.addLast(sslCtx.newHandler(ch.alloc()));
+        pipeline.addLast(sslCtx.newHandler(ch.alloc()));
 
         // On top of the SSL handler, add the text line codec.
-        pipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
+        pipeline.addLast(new FixedLengthFrameDecoder(SecureChatClient.LARGE_DATA.getBytes().length));
         pipeline.addLast(new StringDecoder());
         pipeline.addLast(new StringEncoder());
 

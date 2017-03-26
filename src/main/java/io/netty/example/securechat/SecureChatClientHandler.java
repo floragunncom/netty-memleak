@@ -25,12 +25,13 @@ public class SecureChatClientHandler extends SimpleChannelInboundHandler<String>
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-        //System.out.println(msg);
+        //System.out.println("client got "+msg);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
+        System.out.println("Clienthandler context closed");
         ctx.close();
     }
 }
