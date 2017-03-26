@@ -12,6 +12,9 @@ Slow netty SSL
 * java -Xmx4g -Dopenssl -jar target/netty-sslslow-1.0-jar-with-dependencies.jar
 * fails with io.netty.util.internal.OutOfDirectMemoryError: failed to allocate ...
 
+With -Ddata=3 you can set the amount of data to 3 megabyte for the test
+
+
 ### Tested on
 	OS: Mac OS X x86_64 10.10.5
 	Java Version: 1.8.0_45 Oracle Corporation
