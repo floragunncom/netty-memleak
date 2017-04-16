@@ -16,40 +16,63 @@
   <groupId>sslslow</groupId>
   <packaging>jar</packaging>
   <version>1.0</version>
+  
+  <repositories>
+       <repository>
+         <id>snapshots-repo</id>
+         <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+         <releases><enabled>true</enabled></releases>
+         <snapshots><enabled>true</enabled></snapshots>
+       </repository>
+     </repositories>
 
   <dependencies>
+  
+  
+  
 
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
-      <version>4.1.9.Final</version> <!-- 4.1.9.Final -->
+      <version>4.1.10.Final-SNAPSHOT</version> <!-- 4.1.9.Final -->
     </dependency>
 
     <!-- Optional, for native Open SSL support -->
     <dependency>
        <groupId>io.netty</groupId>
        <artifactId>netty-tcnative</artifactId>
-       <version>2.0.0.Final</version>
-      <classifier>${os.detected.classifier}</classifier>
+       <version>2.0.1.Final-SNAPSHOT</version>
+       <classifier>linux-x86_64-fedora</classifier>
     </dependency>
-
+    
+    <dependency>
+       <groupId>io.netty</groupId>
+       <artifactId>netty-tcnative</artifactId>
+       <version>2.0.1.Final-SNAPSHOT</version>
+       <classifier>osx-x86_64</classifier>
+    </dependency>
+    
+    <!-- <dependency>
+       <groupId>io.netty</groupId>
+       <artifactId>netty-tcnative</artifactId>
+       <version>2.0.1.Final-SNAPSHOT</version>
+       <classifier>linux-x86_64</classifier>
+    </dependency>  -->
+    
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.0.13</version>
-
+      <version>1.2.2</version>
     </dependency>
   </dependencies>
 
   <build>
-  
    <resources>
       <resource>
         <directory>src/main/resources</directory>
         <includes>
-          <include>**/*</include>
+          <include>logback.xml</include>
         </includes>
-        <targetPath>..</targetPath>
       </resource>
     </resources>
   
@@ -61,17 +84,6 @@
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
-        </configuration>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
-        <configuration>
-          <includes>
-            <include>**/*</include>
-          </includes>
         </configuration>
       </plugin>
       

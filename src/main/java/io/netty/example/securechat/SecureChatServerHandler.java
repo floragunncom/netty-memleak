@@ -15,6 +15,7 @@
  */
 package io.netty.example.securechat;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -25,12 +26,7 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
-import java.net.InetAddress;
-
-/**
- * Handles a server-side channel.
- */
-public class SecureChatServerHandler extends SimpleChannelInboundHandler<String> {
+public class SecureChatServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     static final ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
@@ -45,25 +41,17 @@ public class SecureChatServerHandler extends SimpleChannelInboundHandler<String>
         ctx.pipeline().get(SslHandler.class).handshakeFuture().addListener(new GenericFutureListener<Future<Channel>>() {
             @Override
             public void operationComplete(Future<Channel> future) throws Exception {
-                System.out.println("Welcome to " + InetAddress.getLocalHost().getHostName() + " secure chat service!");
-                System.out.println("Your session is protected by "
+                System.out.println("Use "
                         + ctx.pipeline().get(SslHandler.class).engine().getSession().getCipherSuite() + " cipher suite.");
-
-                System.out.println("Peer certificates length: "
-                        + ctx.pipeline().get(SslHandler.class).engine().getSession().getPeerCertificates().length);
                 channels.add(ctx.channel());
             }
         });
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+    public void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
         for (Channel c : channels) {
-            if (c != ctx.channel()) {
-                c.writeAndFlush("ack\r\n");
-            } else {
-                c.writeAndFlush("ack\r\n");
-            }
+            c.writeAndFlush("ack\r\n");
         }
     }
 

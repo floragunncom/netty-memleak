@@ -19,15 +19,10 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.FixedLengthFrameDecoder;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
 
 import javax.net.ssl.SSLEngine;
 
-/**
- * Creates a newly configured {@link ChannelPipeline} for a new channel.
- */
 public class SecureChatServerInitializer extends ChannelInitializer<SocketChannel> {
 
     private final SslContext sslCtx;
@@ -55,10 +50,7 @@ public class SecureChatServerInitializer extends ChannelInitializer<SocketChanne
         }
 
         // On top of the SSL handler, add the text line codec.
-        pipeline.addLast(new FixedLengthFrameDecoder(SecureChatClient.LARGE_DATA.getBytes().length));
-        pipeline.addLast(new StringDecoder());
-        pipeline.addLast(new StringEncoder());
-
+        pipeline.addLast(new FixedLengthFrameDecoder(SecureChatClient.datasize));
         // and then business logic.
         pipeline.addLast(new SecureChatServerHandler());
     }

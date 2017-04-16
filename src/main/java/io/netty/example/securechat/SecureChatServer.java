@@ -16,15 +16,15 @@
 package io.netty.example.securechat;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
-/**
- * Simple SSL chat server modified from {@link TelnetServer}.
- */
 public final class SecureChatServer {
 
     static final int PORT = Integer.parseInt(System.getProperty("port", "8992"));
@@ -33,13 +33,14 @@ public final class SecureChatServer {
     private static EventLoopGroup workerGroup;
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Start netty server v4 on " + PORT + " with " + Main.PROVIDER + " provider");
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new SecureChatServerInitializer(Main.SERVER_SSL_CTX));
+                    .childHandler(new SecureChatServerInitializer(Main.SERVER_SSL_CTX))
+                                .option(ChannelOption.ALLOCATOR, System.getProperty("unpooled") == null ? PooledByteBufAllocator.DEFAULT : UnpooledByteBufAllocator.DEFAULT);
+;
 
             b.bind(PORT).sync().channel().closeFuture().sync();
         } finally {

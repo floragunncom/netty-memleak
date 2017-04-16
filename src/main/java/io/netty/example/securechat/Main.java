@@ -1,6 +1,5 @@
 package io.netty.example.securechat;
 
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.handler.ssl.ApplicationProtocolConfig;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
@@ -10,9 +9,7 @@ import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 
 import java.security.cert.CertificateException;
-import java.util.Date;
 
-import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 
 public class Main {
@@ -30,18 +27,16 @@ public class Main {
         }
     }
 
-    public static SSLEngine createServerEngine() {
-        System.out.println("create new " + PROVIDER + " server engine");
-        return SERVER_SSL_CTX.newEngine(PooledByteBufAllocator.DEFAULT);
-    }
-
     public static void main(String[] args) throws Exception {
 
         PROVIDER = System.getProperty("openssl") != null ? SslProvider.OPENSSL : SslProvider.JDK;
-
+        PROVIDER = System.getProperty("opensslref") != null ? SslProvider.OPENSSL_REFCNT : PROVIDER;
         try {
             SERVER_SSL_CTX = SslContextBuilder.forServer(sc.key(), sc.cert()).applicationProtocolConfig(ApplicationProtocolConfig.DISABLED)
-                    .clientAuth(ClientAuth.REQUIRE).sslProvider(Main.PROVIDER).trustManager(sc.cert()).build();
+                    .clientAuth(ClientAuth.REQUIRE).sslProvider(Main.PROVIDER).trustManager(sc.cert())
+                    .ciphers(SecureChatClient.ciphers)
+                    .protocols("TLSv1")
+                    .build();
         } catch (SSLException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -56,10 +51,10 @@ public class Main {
         System.out.println("Open SSL available: " + OpenSsl.isAvailable());
         System.out.println("Open SSL version: " + OpenSsl.versionString());
         System.out.println("Max memory: " + Runtime.getRuntime().maxMemory() / (1024 * 1024) + "mb");
-        System.out.println("Starttime: " + new Date());
-        long start = System.currentTimeMillis();
+        System.out.println("Provider " + PROVIDER);
+        
 
-        Thread s = new Thread(new Runnable() {
+        final Thread s = new Thread(new Runnable() {
 
             @Override
             public void run() {
@@ -72,17 +67,17 @@ public class Main {
             }
         });
         s.start();
+        
+        Thread.sleep(500);
+        final long start = System.currentTimeMillis();
 
-        // Thread.sleep(2000);
-
-        Thread c = new Thread(new Runnable() {
+        final Thread c = new Thread(new Runnable() {
 
             @Override
             public void run() {
                 try {
                     SecureChatClient.main(null);
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -90,10 +85,14 @@ public class Main {
 
         c.start();
         c.join();
-        long end = System.currentTimeMillis();
-        System.out.println("Endtime: " + new Date());
-        System.out.println("Took " + (end - start) + " ms");
-        SecureChatServer.kill();
-        s.interrupt();
+        final long end = System.currentTimeMillis();
+        System.out.println("Took " + (end - start) + " ms in total");
+        System.out.println("That is " + ((SecureChatClient.rounds*SecureChatClient.datasize)/(1024*(end - start))) + " kb/ms");
+        
+        String ssl = System.getProperty("nossl") != null?"nossl":PROVIDER.toString();
+        
+        System.out.println(ssl+";"+SecureChatClient.rounds+";"+(SecureChatClient.datasize)+";"+(end - start)+";"+((SecureChatClient.rounds*SecureChatClient.datasize)/(1024*(end - start))));
+
+        System.exit(0);
     }
 }
