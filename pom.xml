@@ -12,8 +12,8 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>netty-sslslow</artifactId>
-  <groupId>sslslow</groupId>
+  <artifactId>simpleperf</artifactId>
+  <groupId>simpleperf</groupId>
   <packaging>jar</packaging>
   <version>1.0</version>
   
@@ -92,7 +92,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>io.netty.example.securechat.Main</mainClass>
+              <mainClass>io.netty.example.securechat.PlainSSLTestMain</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

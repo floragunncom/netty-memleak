@@ -1,24 +1,31 @@
-Slow netty SSL
+Simple SSL PerfTest
 
-## If no additional properties are set
-* java -Xmx4g -jar target/netty-sslslow-1.0-jar-with-dependencies.jar
-* runs with ssl and approx 20 mb data (on my machine tooks around 1200 ms, with java 1.8.0_45 its around 10000 ms !)
+## Run with SSL
+* java -Xmx4g -jar target/simpleperf-1.0-jar-with-dependencies.jar
 
-## -Dnossl
-* java -Xmx4g -Dnossl -jar target/netty-sslslow-1.0-jar-with-dependencies.jar
-* runs without ssl and approx 20 mb data (on my machine tooks around 300-400 ms)
+## Run without SSL
+* java -Xmx4g -Dnossl=true -jar target/simpleperf-1.0-jar-with-dependencies.jar
 
-## with OpenSSL
-* java -Xmx4g -Dopenssl -jar target/netty-sslslow-1.0-jar-with-dependencies.jar
-* fails with io.netty.util.internal.OutOfDirectMemoryError: failed to allocate ...
-
-With -Ddata=3 you can set the amount of data to 3 megabyte for the test
 
 
 ### Tested on
+	Mac14,1
+	4 x 2,7 GHz Intel Core i5
+	
 	OS: Mac OS X x86_64 10.10.5
-    Java Version: 1.8.0_102 Oracle Corporation
-    JVM Impl.: 25.102-b14 Oracle Corporation Java HotSpot(TM) 64-Bit Server VM
-    OpenSSL 1.0.2h
-    Netty 4.1.9
-    tcnative: 2.0.0.Final
+	Java Version: 1.8.0_131 Oracle Corporation
+	JVM Impl.: 25.131-b11 Oracle Corporation Java HotSpot(TM) 64-Bit Server VM
+	TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+	TLSv1.2
+	200 mbyte in 7433 ms
+	28 mbyte/sec
+	224 mbit/sec
+	
+	
+	OS: Mac OS X x86_64 10.10.5
+	Java Version: 1.8.0_131 Oracle Corporation
+	JVM Impl.: 25.131-b11 Oracle Corporation Java HotSpot(TM) 64-Bit Server VM
+	no ssl mode
+	200 mbyte in 3518 ms
+	66 mbyte/sec
+	528 mbit/sec
